@@ -45,7 +45,7 @@ impl Board {
 
         let white_pieces = vec![
             Piece::Rook("images/wrook.png".to_string()),
-            Piece::Knight("images/wking.png".to_string()),
+            Piece::Knight("images/wknight.png".to_string()),
             Piece::Bishop("images/wbishop.png".to_string()),
             Piece::Queen("images/wqueen.png".to_string()),
             Piece::King("images/wking.png".to_string()),
@@ -56,7 +56,7 @@ impl Board {
 
         let black_pieces = vec![
             Piece::Rook("images/brook.png".to_string()),
-            Piece::Knight("images/bking.png".to_string()),
+            Piece::Knight("images/bknight.png".to_string()),
             Piece::Bishop("images/bbishop.png".to_string()),
             Piece::Queen("images/bqueen.png".to_string()),
             Piece::King("images/bking.png".to_string()),
