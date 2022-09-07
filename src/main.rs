@@ -1,21 +1,24 @@
 use macroquad::prelude::*;
 
 pub const RAYWHITE: Color = Color::new(0.96, 0.96, 0.96, 1.00);
+pub const COLOR_AFTER_CLICK: Color = GRAY;
 pub const SCREENSIZE: f32 = 600.0;
 
 mod pieces;
 use pieces::{Data, Piece};
+mod textures;
+use textures::get_textures;
 
 #[macroquad::main(window_conf)]
 async fn main() {
-    let board = Board::new().await;
-    let mut i = 0;
-    let board_ = load_texture("images/board.png").await.unwrap();
+    let mut board = Board::new().await;
+
+    let textures = get_textures().await;
     loop {
         clear_background(BLACK);
 
-        //pieces::check_for_move(&mut board.pieces);
-        board.draw(&mut i, board_);
+        pieces::check_for_move(&mut board.pieces);
+        board.draw(&textures);
 
         next_frame().await
     }
@@ -35,21 +38,7 @@ struct Board {
 }
 impl Board {
     async fn new() -> Self {
-        let textures = vec![
-            load_texture("images/wpawn.png").await.unwrap(),
-            load_texture("images/wknight.png").await.unwrap(),
-            load_texture("images/wbishop.png").await.unwrap(),
-            load_texture("images/wrook.png").await.unwrap(),
-            load_texture("images/wqueen.png").await.unwrap(),
-            load_texture("images/wking.png").await.unwrap(),
-            load_texture("images/bpawn.png").await.unwrap(),
-            load_texture("images/bknight.png").await.unwrap(),
-            load_texture("images/bbishop.png").await.unwrap(),
-            load_texture("images/brook.png").await.unwrap(),
-            load_texture("images/bqueen.png").await.unwrap(),
-            load_texture("images/bking.png").await.unwrap(),
-        ];
-
+        let textures = get_textures().await;
         let mut none = Vec::new();
         for _ in 0..8 {
             none.push(Piece::None);
@@ -61,25 +50,25 @@ impl Board {
         }
 
         let white_pieces = vec![
-            Piece::Rook(Data::new("images/wrook.png")),
-            Piece::Knight(Data::new("images/wknight.png")),
-            Piece::Bishop(Data::new("images/wbishop.png")),
-            Piece::Queen(Data::new("images/wqueen.png")),
-            Piece::King(Data::new("images/wking.png")),
-            Piece::Bishop(Data::new("images/wbishop.png")),
-            Piece::Knight(Data::new("images/wknight.png")),
-            Piece::Rook(Data::new("images/wrook.png")),
+            Piece::Rook(Data::new(textures[3])),
+            Piece::Knight(Data::new(textures[1])),
+            Piece::Bishop(Data::new(textures[2])),
+            Piece::Queen(Data::new(textures[4])),
+            Piece::King(Data::new(textures[5])),
+            Piece::Bishop(Data::new(textures[2])),
+            Piece::Knight(Data::new(textures[1])),
+            Piece::Rook(Data::new(textures[3])),
         ];
 
         let black_pieces = vec![
-            Piece::Rook(Data::new("images/brook.png")),
-            Piece::Knight(Data::new("images/bknight.png")),
-            Piece::Bishop(Data::new("images/bbishop.png")),
-            Piece::Queen(Data::new("images/bqueen.png")),
-            Piece::King(Data::new("images/bking.png")),
-            Piece::Bishop(Data::new("images/bbishop.png")),
-            Piece::Knight(Data::new("images/bknight.png")),
-            Piece::Rook(Data::new("images/brook.png")),
+            Piece::Rook(Data::new(textures[9])),
+            Piece::Knight(Data::new(textures[7])),
+            Piece::Bishop(Data::new(textures[8])),
+            Piece::Queen(Data::new(textures[10])),
+            Piece::King(Data::new(textures[11])),
+            Piece::Bishop(Data::new(textures[8])),
+            Piece::Knight(Data::new(textures[7])),
+            Piece::Rook(Data::new(textures[9])),
         ];
 
         for j in 0..8 {
@@ -87,9 +76,9 @@ impl Board {
                 if j == 2 || j == 3 || j == 4 || j == 5 {
                     pieces[j][i] = Piece::None;
                 } else if j == 6 {
-                    pieces[j][i] = Piece::Pawn(Data::new("images/wpawn.png"));
+                    pieces[j][i] = Piece::Pawn(Data::new(textures[0]));
                 } else if j == 1 {
-                    pieces[j][i] = Piece::Pawn(Data::new("images/bpawn.png"));
+                    pieces[j][i] = Piece::Pawn(Data::new(textures[6]));
                 } else if j == 7 {
                     pieces[j] = white_pieces.to_vec();
                 } else if j == 0 {
@@ -100,41 +89,28 @@ impl Board {
         Self { pieces }
     }
 
-    fn draw(&self, i: &mut i32, board: Texture2D) {
-        //let board_ = load_texture("images/board.png").await.unwrap();
-
+    fn draw(&self, textures: &Vec<Texture2D>) {
         let board_params = self.get_param(SCREENSIZE, SCREENSIZE);
-
-        draw_texture_ex(board, 0.0, 0.0, RAYWHITE, board_params);
+        draw_texture_ex(textures[12], 0.0, 0.0, RAYWHITE, board_params);
 
         for j in 0..8 {
             for i in 0..8 {
-                let path = Piece::get_path(&self.pieces[j][i]);
-                if path == "".to_string() {
+                let tex = Piece::get_texture(&self.pieces[j][i]);
+                if tex == Texture2D::empty() {
                     continue;
                 }
 
-                /*if Piece::get_color(&self.pieces[j][i]) == RED {
-                    println!("true");
-                }
-                else {
-                    println!("false");
-                }*/
-
-                //let texture = load_texture(&path).await.unwrap();
                 let params = self.get_param(SCREENSIZE / 8.0 - 3.0, SCREENSIZE / 8.0 - 3.0);
 
-                /*draw_texture_ex(
-                    texture,
+                draw_texture_ex(
+                    tex,
                     i as f32 * (SCREENSIZE / 8.0) + 1.0,
                     j as f32 * (SCREENSIZE / 8.0) + 3.0,
                     Piece::get_color(&self.pieces[j][i]),
                     params,
-                );*/
+                );
             }
         }
-        println!("{}", i);
-        *i += 1;
     }
 
     fn get_param(&self, x: f32, y: f32) -> DrawTextureParams {
