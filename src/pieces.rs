@@ -1,26 +1,73 @@
 use macroquad::prelude::*;
 
-#[derive(Clone, Debug, PartialEq)]
+use crate::{RAYWHITE, SCREENSIZE};
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum Piece {
     None,
-    Pawn(String),
-    Knight(String),
-    Bishop(String),
-    Rook(String),
-    Queen(String),
-    King(String),
+    Pawn(Data),
+    Knight(Data),
+    Bishop(Data),
+    Rook(Data),
+    Queen(Data),
+    King(Data),
 }
 impl Piece {
+    pub fn change_value(piece: &Piece, dat: Data) -> Piece {
+        /*let mut da = Data {..Default::default()};
+        change.typ
+        if mem == DataMember::Path {
+            da = Data {
+                //path: change,
+                ..Default::default()
+            }
+        }*/
+
+        return match &piece {
+            Piece::Pawn(_) => Piece::Pawn(dat),
+            Piece::Knight(_) => Piece::Knight(dat),
+            Piece::Bishop(_) => Piece::Bishop(dat),
+            Piece::Rook(_) => Piece::Rook(dat),
+            Piece::Queen(_) => Piece::Queen(dat),
+            Piece::King(_) => Piece::King(dat),
+            _ => Piece::None,
+        };
+    }
+
     pub fn get_path(piece: &Piece) -> String {
         match piece {
             Piece::None => "".to_string(),
-            Piece::Pawn(str)
-            | Piece::Knight(str)
-            | Piece::Bishop(str)
-            | Piece::Rook(str)
-            | Piece::Queen(str)
-            | Piece::King(str) => str.to_string(),
+            Piece::Pawn(data)
+            | Piece::Knight(data)
+            | Piece::Bishop(data)
+            | Piece::Rook(data)
+            | Piece::Queen(data)
+            | Piece::King(data) => data.path.clone(),
         }
+    }
+
+    pub fn get_color(piece: &Piece) -> Color {
+        match piece {
+            Piece::None => RAYWHITE,
+            Piece::Pawn(data)
+            | Piece::Knight(data)
+            | Piece::Bishop(data)
+            | Piece::Rook(data)
+            | Piece::Queen(data)
+            | Piece::King(data) => data.color.clone(),
+        }
+    }
+
+    pub fn get_if_clicked(piece: &Piece) -> bool {
+        return match &piece {
+            Piece::Pawn(dat)
+            | Piece::Knight(dat)
+            | Piece::Bishop(dat)
+            | Piece::Rook(dat)
+            | Piece::Queen(dat)
+            | Piece::King(dat) => dat.clicked,
+            _ => false,
+        };
     }
 }
 
@@ -31,11 +78,73 @@ pub fn check_for_move(pieces: &mut Vec<Vec<Piece>>) {
                 continue;
             }
 
-            if is_mouse_button_pressed(MouseButton::Left) {}
+            if piece_clicked(i, j) {
+                pieces[j][i] = Piece::change_value(
+                    &pieces[j][i],
+                    Data {
+                        path: Piece::get_path(&pieces[j][i]),
+                        color: RED,
+                        clicked: true,
+                        ..Default::default()
+                    },
+                );
+                println!("changed");
+            }
+            if Piece::get_if_clicked(&pieces[j][i]) {
+                pieces[j][i] = Piece::change_value(
+                    &pieces[j][i],
+                    Data {
+                        path: Piece::get_path(&pieces[j][i]),
+                        color: RED,
+                        clicked: true,
+                        ..Default::default()
+                    },
+                )
+            }
         }
     }
 }
-#[derive(Debug, Clone, PartialEq)]
-struct Data {
-    
+
+fn piece_clicked(x: usize, y: usize) -> bool {
+    let x = x as f32;
+    let y = y as f32;
+    let square = SCREENSIZE / 8.0;
+
+    return is_mouse_button_pressed(MouseButton::Left)
+        && mouse_position().0 > x * square
+        && mouse_position().0 < x * square + square
+        && mouse_position().1 > y * square
+        && mouse_position().1 < y * square + square;
 }
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Data {
+    path: String,
+    clicked: bool,
+    color: Color,
+}
+impl Data {
+    pub fn new(path: &str) -> Self {
+        Self {
+            path: path.to_string(),
+            clicked: false,
+            color: RAYWHITE,
+        }
+    }
+}
+impl Default for Data {
+    fn default() -> Self {
+        Self {
+            path: "images/error".to_string(),
+            clicked: false,
+            color: RED,
+        }
+    }
+}
+
+/*#[derive(Debug, PartialEq)]
+enum DataMember {
+    Path,
+    Clicked,
+    Color,
+}*/
