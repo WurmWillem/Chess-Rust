@@ -1,6 +1,6 @@
 use macroquad::prelude::*;
 
-use crate::{RAYWHITE, SCREENSIZE};
+use crate::{textures::get_textures, RAYWHITE, SCREENSIZE};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Piece {
@@ -34,15 +34,15 @@ impl Piece {
         };
     }
 
-    pub fn get_path(piece: &Piece) -> String {
+    pub fn get_texture(piece: &Piece) -> Texture2D {
         match piece {
-            Piece::None => "".to_string(),
+            Piece::None => Texture2D::empty(),
             Piece::Pawn(data)
             | Piece::Knight(data)
             | Piece::Bishop(data)
             | Piece::Rook(data)
             | Piece::Queen(data)
-            | Piece::King(data) => data.path.clone(),
+            | Piece::King(data) => data.tex.clone(),
         }
     }
 
@@ -71,7 +71,7 @@ impl Piece {
     }
 }
 
-pub fn check_for_move(pieces: &mut Vec<Vec<Piece>>) {
+pub fn check_for_move(pieces: &mut Vec<Vec<Piece>>, textures: &Vec<Texture2D>) {
     for j in 0..8 {
         for i in 0..8 {
             if pieces[j][i] == Piece::None {
@@ -82,7 +82,7 @@ pub fn check_for_move(pieces: &mut Vec<Vec<Piece>>) {
                 pieces[j][i] = Piece::change_value(
                     &pieces[j][i],
                     Data {
-                        path: Piece::get_path(&pieces[j][i]),
+                        tex: Piece::get_texture(&pieces[j][i]),
                         color: RED,
                         clicked: true,
                         ..Default::default()
@@ -94,7 +94,7 @@ pub fn check_for_move(pieces: &mut Vec<Vec<Piece>>) {
                 pieces[j][i] = Piece::change_value(
                     &pieces[j][i],
                     Data {
-                        path: Piece::get_path(&pieces[j][i]),
+                        tex: Piece::get_texture(&pieces[j][i]),
                         color: RED,
                         clicked: true,
                         ..Default::default()
@@ -119,14 +119,14 @@ fn piece_clicked(x: usize, y: usize) -> bool {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Data {
-    path: String,
+    tex: Texture2D,
     clicked: bool,
     color: Color,
 }
 impl Data {
-    pub fn new(path: &str) -> Self {
+    pub fn new(tex: Texture2D) -> Self {
         Self {
-            path: path.to_string(),
+            tex: tex,
             clicked: false,
             color: RAYWHITE,
         }
@@ -135,7 +135,7 @@ impl Data {
 impl Default for Data {
     fn default() -> Self {
         Self {
-            path: "images/error".to_string(),
+            tex: Texture2D::empty(),
             clicked: false,
             color: RED,
         }
