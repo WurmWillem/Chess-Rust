@@ -1,6 +1,7 @@
 use macroquad::prelude::*;
 
 pub const RAYWHITE: Color = Color::new(0.96, 0.96, 0.96, 1.00);
+pub const COLOR_AFTER_CLICK: Color = GRAY;
 pub const SCREENSIZE: f32 = 600.0;
 
 mod pieces;
@@ -10,14 +11,14 @@ use textures::get_textures;
 
 #[macroquad::main(window_conf)]
 async fn main() {
-    let board = Board::new().await;
-    let mut i = 0;
+    let mut board = Board::new().await;
+
     let textures = get_textures().await;
     loop {
         clear_background(BLACK);
 
-        //pieces::check_for_move(&mut board.pieces);
-        board.draw(&mut i, &textures);
+        pieces::check_for_move(&mut board.pieces);
+        board.draw(&textures);
 
         next_frame().await
     }
@@ -88,7 +89,7 @@ impl Board {
         Self { pieces }
     }
 
-    fn draw(&self, i: &mut i32, textures: &Vec<Texture2D>) {
+    fn draw(&self, textures: &Vec<Texture2D>) {
         let board_params = self.get_param(SCREENSIZE, SCREENSIZE);
         draw_texture_ex(textures[12], 0.0, 0.0, RAYWHITE, board_params);
 
@@ -110,8 +111,6 @@ impl Board {
                 );
             }
         }
-        println!("{}", i);
-        *i += 1;
     }
 
     fn get_param(&self, x: f32, y: f32) -> DrawTextureParams {

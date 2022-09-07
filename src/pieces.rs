@@ -1,6 +1,6 @@
 use macroquad::prelude::*;
 
-use crate::{textures::get_textures, RAYWHITE, SCREENSIZE};
+use crate::{COLOR_AFTER_CLICK, RAYWHITE, SCREENSIZE};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Piece {
@@ -14,15 +14,6 @@ pub enum Piece {
 }
 impl Piece {
     pub fn change_value(piece: &Piece, dat: Data) -> Piece {
-        /*let mut da = Data {..Default::default()};
-        change.typ
-        if mem == DataMember::Path {
-            da = Data {
-                //path: change,
-                ..Default::default()
-            }
-        }*/
-
         return match &piece {
             Piece::Pawn(_) => Piece::Pawn(dat),
             Piece::Knight(_) => Piece::Knight(dat),
@@ -71,7 +62,7 @@ impl Piece {
     }
 }
 
-pub fn check_for_move(pieces: &mut Vec<Vec<Piece>>, textures: &Vec<Texture2D>) {
+pub fn check_for_move(pieces: &mut Vec<Vec<Piece>>) {
     for j in 0..8 {
         for i in 0..8 {
             if pieces[j][i] == Piece::None {
@@ -83,7 +74,7 @@ pub fn check_for_move(pieces: &mut Vec<Vec<Piece>>, textures: &Vec<Texture2D>) {
                     &pieces[j][i],
                     Data {
                         tex: Piece::get_texture(&pieces[j][i]),
-                        color: RED,
+                        color: COLOR_AFTER_CLICK,
                         clicked: true,
                         ..Default::default()
                     },
@@ -95,7 +86,7 @@ pub fn check_for_move(pieces: &mut Vec<Vec<Piece>>, textures: &Vec<Texture2D>) {
                     &pieces[j][i],
                     Data {
                         tex: Piece::get_texture(&pieces[j][i]),
-                        color: RED,
+                        color: COLOR_AFTER_CLICK,
                         clicked: true,
                         ..Default::default()
                     },
