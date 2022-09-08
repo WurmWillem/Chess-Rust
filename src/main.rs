@@ -1,9 +1,7 @@
 use macroquad::prelude::*;
 
-pub const RAYWHITE: Color = Color::new(0.96, 0.96, 0.96, 1.00);
-pub const COLOR_AFTER_CLICK: Color = GRAY;
-pub const SCREENSIZE: f32 = 600.0;
-
+mod consts;
+pub use consts::*;
 mod pieces;
 use pieces::{Data, Piece};
 mod textures;
@@ -13,12 +11,11 @@ use textures::get_textures;
 async fn main() {
     let mut board = Board::new().await;
 
-    let textures = get_textures().await;
     loop {
         clear_background(BLACK);
 
         pieces::check_for_move(&mut board.pieces);
-        board.draw(&textures);
+        board.draw();
 
         next_frame().await
     }
@@ -89,26 +86,69 @@ impl Board {
         Self { pieces }
     }
 
-    fn draw(&self, textures: &Vec<Texture2D>) {
-        let board_params = self.get_param(SCREENSIZE, SCREENSIZE);
-        draw_texture_ex(textures[12], 0.0, 0.0, RAYWHITE, board_params);
+    fn draw(&mut self) {
+        self.draw_board();
 
         for j in 0..8 {
             for i in 0..8 {
+                //self.pieces[j][i] = Piece::None;
                 let tex = Piece::get_texture(&self.pieces[j][i]);
                 if tex == Texture2D::empty() {
                     continue;
                 }
 
-                let params = self.get_param(SCREENSIZE / 8.0 - 3.0, SCREENSIZE / 8.0 - 3.0);
+                let params = self.get_param(SQUARE - 3.0, SQUARE - 3.0);
 
                 draw_texture_ex(
                     tex,
-                    i as f32 * (SCREENSIZE / 8.0) + 1.0,
-                    j as f32 * (SCREENSIZE / 8.0) + 3.0,
+                    i as f32 * SQUARE + 1.0,
+                    j as f32 * SQUARE + 3.0,
                     Piece::get_color(&self.pieces[j][i]),
                     params,
                 );
+            }
+        }
+    }
+
+    fn draw_board(&self) {
+        for j in 0..8 {
+            for i in 0..8 {
+                let moves = Piece::get_moves(&self.pieces[j][i]);
+                if moves.len() > 0 {
+                    for m in moves {
+                        draw_circle(
+                            m.1 as f32 * SQUARE + SQUARE / 2.0,
+                            m.0 as f32 * SQUARE + SQUARE / 2.0,
+                            SQUARE / 6.0,
+                            MY_GRAY,
+                        )
+                    }
+                }
+                if Piece::get_if_selected(&self.pieces[j][i]) {
+                    draw_rectangle(
+                        i as f32 * SQUARE,
+                        j as f32 * SQUARE,
+                        SQUARE,
+                        SQUARE,
+                        MY_YELLOW,
+                    )
+                } else if (j + i) % 2 == 0 {
+                    draw_rectangle(
+                        i as f32 * SQUARE,
+                        j as f32 * SQUARE,
+                        SQUARE,
+                        SQUARE,
+                        MY_WHITE,
+                    )
+                } else {
+                    draw_rectangle(
+                        i as f32 * SQUARE,
+                        j as f32 * SQUARE,
+                        SQUARE,
+                        SQUARE,
+                        MY_GREEN,
+                    )
+                }
             }
         }
     }
