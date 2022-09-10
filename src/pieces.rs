@@ -95,89 +95,134 @@ impl Piece {
         pieces[m.0][m.1] = pieces[index.0][index.1].clone();
         pieces[index.0][index.1] = Piece::None;
 
-        pieces[m.0][m.1] = Piece::change_value(&pieces[m.0][m.1], Data {
-            tex: Piece::get_texture(&pieces[m.0][m.1]),
-            ..Default::default()
-        });
+        pieces[m.0][m.1] = Piece::change_value(
+            &pieces[m.0][m.1],
+            Data {
+                tex: Piece::get_texture(&pieces[m.0][m.1]),
+                ..Default::default()
+            },
+        );
     }
 }
 
 pub fn check_for_move(pieces: &mut Vec<Vec<Piece>>) {
-    if any_piece_selected(pieces) {
-        let mut moves: Vec<(usize, usize)> = Vec::new();
-        let mut index = (0, 0);
+    let mut moves: Vec<(usize, usize)> = Vec::new();
+    let mut index = (0, 0);
 
-        for j in 0..8 {
-            for i in 0..8 {
-                if Piece::get_moves(&pieces[j][i]).len() > 0 {
-                    moves = Piece::get_moves(&pieces[j][i]);
-                    index = (j, i);
-                    break;
-                }
+    for j in 0..8 {
+        for i in 0..8 {
+            if Piece::get_moves(&pieces[j][i]).len() > 0 {
+                moves = Piece::get_moves(&pieces[j][i]);
+                index = (j, i);
+                break;
             }
         }
-        if moves.len() > 0 {
-            for j in 0..8 {
-                for i in 0..8 {
-                    if piece_clicked(i, j) {
-                        for m in &moves {
-                            if (j, i) == *m {
-                                Piece::make_move(pieces, index, *m);
-                            }
-                        }
+    }
+
+    for j in 0..8 {
+        for i in 0..8 {
+            if !piece_clicked(i, j) {
+                continue;
+            }
+
+            let mut moved_piece = false;
+            Piece::deselect_every_piece(pieces);
+
+            if moves.len() > 0 {
+                for m in &moves {
+                    if (j, i) == *m {
+                        Piece::make_move(pieces, index, *m);
+                        moved_piece = true;
                         break;
                     }
                 }
             }
-        }
-    }
 
-    for j in 0..8 {
-        for i in 0..8 {
-            if pieces[j][i] == Piece::None {
+            if pieces[j][i] == Piece::None || moved_piece {
                 continue;
             }
 
-            if piece_clicked(i, j) {
-                Piece::deselect_every_piece(pieces);
-
-                pieces[j][i] = Piece::change_value(
-                    &pieces[j][i],
-                    Data {
-                        tex: Piece::get_texture(&pieces[j][i]),
-                        selected: true,
-                        moves: calculate_moves(&pieces[j][i], j, i),
-                        ..Default::default()
-                    },
-                );
-            }
+            pieces[j][i] = Piece::change_value(
+                &pieces[j][i],
+                Data {
+                    tex: Piece::get_texture(&pieces[j][i]),
+                    selected: true,
+                    moves: calculate_moves(&pieces[j][i], j, i),
+                    ..Default::default()
+                },
+            );
         }
     }
 }
 
-fn any_piece_selected(pieces: &mut Vec<Vec<Piece>>) -> bool {
-    for j in 0..8 {
-        for i in 0..8 {
-            if Piece::get_if_selected(&pieces[j][i]) {
-                return true;
-            }
+fn try_(vec: Vec<(isize, isize)>) -> Vec<(usize, usize)> {
+    let mut vec_safe: Vec<(usize, usize)> = Vec::new();
+
+    for v in &vec {
+        if v.0 >= 0 && v.1 >= 0 {
+            vec_safe.push((v.0 as usize, v.1 as usize));
         }
     }
-    false
+    vec_safe
 }
 
 fn calculate_moves(piece: &Piece, j: usize, i: usize) -> Vec<(usize, usize)> {
+    let j = j as isize;
+    let i = i as isize;
     match piece {
         Piece::Pawn(_) => {
-            if j == 1 {
-                vec![(j - 1, i), (j - 2, i)]
+            if j == 6 {
+                try_(vec![(j - 1, i), (j - 2, i)])
             } else {
-                vec![(j - 1, i)]
+                try_(vec![(j - 1, i)])
             }
         }
-        Piece::Knight(_) => {
-            vec![(j - 2, i + 1), (j - 2, i - 1)]
+        Piece::Knight(_) => try_(vec![
+            (j - 2, i + 1),
+            (j - 2, i - 1),
+            (j + 2, i + 1),
+            (j + 2, i - 1),
+            (j - 1, i - 2),
+            (j - 1, i + 2),
+            (j + 1, i - 2),
+            (j + 1, i + 2),
+        ]),
+        Piece::Bishop(_) => {
+            let mut vec: Vec<(isize, isize)> = Vec::new();
+            for diff in (-7..8).rev() {
+                vec.push((j + diff, i + diff));
+                vec.push((j + diff, i - diff));
+            }
+            try_(vec)
         }
+        Piece::Rook(_) => {
+            let mut vec: Vec<(isize, isize)> = Vec::new();
+            for diff in (-7..8).rev() {
+                vec.push((j, i + diff));
+                vec.push((j + diff, i));
+            }
+            try_(vec)
+        }
+        Piece::Queen(_) => {
+            let mut vec: Vec<(isize, isize)> = Vec::new();
+            for diff in (-7..8).rev() {
+                vec.push((j, i + diff));
+                vec.push((j + diff, i));
+                vec.push((j + diff, i + diff));
+                vec.push((j + diff, i - diff));
+            }
+            try_(vec)
+        }
+        Piece::King(_) => try_(vec![
+            (j, i + 1),
+            (j, i - 1),
+            (j + 1, i),
+            (j - 1, i),
+            (j + 1, i + 1),
+            (j + 1, i - 1),
+            (j - 1, i + 1),
+            (j - 1, i - 1),
+        ]),
         _ => Vec::new(),
     }
 }
@@ -220,10 +265,3 @@ impl Default for Data {
         }
     }
 }
-
-/*#[derive(Debug, PartialEq)]
-enum DataMember {
-    Path,
-    Clicked,
-    Color,
-}*/

@@ -113,17 +113,6 @@ impl Board {
     fn draw_board(&self) {
         for j in 0..8 {
             for i in 0..8 {
-                let moves = Piece::get_moves(&self.pieces[j][i]);
-                if moves.len() > 0 {
-                    for m in moves {
-                        draw_circle(
-                            m.1 as f32 * SQUARE + SQUARE / 2.0,
-                            m.0 as f32 * SQUARE + SQUARE / 2.0,
-                            SQUARE / 6.0,
-                            MY_GRAY,
-                        )
-                    }
-                }
                 if Piece::get_if_selected(&self.pieces[j][i]) {
                     draw_rectangle(
                         i as f32 * SQUARE,
@@ -131,8 +120,10 @@ impl Board {
                         SQUARE,
                         SQUARE,
                         MY_YELLOW,
-                    )
-                } else if (j + i) % 2 == 0 {
+                    );
+                    continue;
+                }
+                if (j + i) % 2 == 0 {
                     draw_rectangle(
                         i as f32 * SQUARE,
                         j as f32 * SQUARE,
@@ -148,6 +139,21 @@ impl Board {
                         SQUARE,
                         MY_GREEN,
                     )
+                }
+            }
+        }
+        for j in 0..8 {
+            for i in 0..8 {
+                let moves = Piece::get_moves(&self.pieces[j][i]);
+                if moves.len() > 0 {
+                    for m in moves {
+                        draw_circle(
+                            m.1 as f32 * SQUARE + SQUARE / 2.0,
+                            m.0 as f32 * SQUARE + SQUARE / 2.0,
+                            SQUARE / 6.0,
+                            MY_GRAY,
+                        );
+                    }
                 }
             }
         }
