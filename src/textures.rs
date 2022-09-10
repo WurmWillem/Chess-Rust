@@ -1,7 +1,7 @@
 use macroquad::prelude::*;
 
 pub async fn get_textures() -> Vec<Texture2D> {
-    let textures = vec![
+    return vec![
         load_texture("images/wpawn.png").await.unwrap(),
         load_texture("images/wknight.png").await.unwrap(),
         load_texture("images/wbishop.png").await.unwrap(),
@@ -16,5 +16,4 @@ pub async fn get_textures() -> Vec<Texture2D> {
         load_texture("images/bking.png").await.unwrap(),
         load_texture("images/board.png").await.unwrap(),
     ];
-    textures
 }
