@@ -1,5 +1,4 @@
-use crate::{state::Side, RAYWHITE, SQUARE};
-use macroquad::prelude::*;
+use crate::piece_data::Data;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Piece {
@@ -12,85 +11,13 @@ pub enum Piece {
     King(Data),
 }
 impl Piece {
-    pub fn change_value(piece: &Piece, dat: Data) -> Piece {
-        return match &piece {
-            Piece::Pawn(_) => Piece::Pawn(dat),
-            Piece::Knight(_) => Piece::Knight(dat),
-            Piece::Bishop(_) => Piece::Bishop(dat),
-            Piece::Rook(_) => Piece::Rook(dat),
-            Piece::Queen(_) => Piece::Queen(dat),
-            Piece::King(_) => Piece::King(dat),
-            _ => Piece::None,
-        };
-    }
-
-    pub fn get_texture(piece: &Piece) -> Texture2D {
-        match piece {
-            Piece::None => Texture2D::empty(),
-            Piece::Pawn(data)
-            | Piece::Knight(data)
-            | Piece::Bishop(data)
-            | Piece::Rook(data)
-            | Piece::Queen(data)
-            | Piece::King(data) => data.tex.clone(),
-        }
-    }
-
-    pub fn get_color(piece: &Piece) -> Color {
-        match piece {
-            Piece::None => RAYWHITE,
-            Piece::Pawn(data)
-            | Piece::Knight(data)
-            | Piece::Bishop(data)
-            | Piece::Rook(data)
-            | Piece::Queen(data)
-            | Piece::King(data) => data.color.clone(),
-        }
-    }
-
-    pub fn get_if_selected(piece: &Piece) -> bool {
-        return match &piece {
-            Piece::Pawn(dat)
-            | Piece::Knight(dat)
-            | Piece::Bishop(dat)
-            | Piece::Rook(dat)
-            | Piece::Queen(dat)
-            | Piece::King(dat) => dat.selected,
-            _ => false,
-        };
-    }
-
-    pub fn get_moves(piece: &Piece) -> Vec<(usize, usize)> {
-        return match piece {
-            Piece::Pawn(dat)
-            | Piece::Knight(dat)
-            | Piece::Bishop(dat)
-            | Piece::Rook(dat)
-            | Piece::Queen(dat)
-            | Piece::King(dat) => dat.moves.to_vec(),
-            _ => Vec::new(),
-        };
-    }
-
-    pub fn get_side(piece: &Piece) -> Side {
-        return match piece {
-            Piece::Pawn(dat)
-            | Piece::Knight(dat)
-            | Piece::Bishop(dat)
-            | Piece::Rook(dat)
-            | Piece::Queen(dat)
-            | Piece::King(dat) => dat.side.clone(),
-            _ => Side::None,
-        };
-    }
-
     pub fn deselect_every_piece(pieces: &mut Vec<Vec<Piece>>) {
         for j in 0..8 {
             for i in 0..8 {
                 if pieces[j][i] == Piece::None {
                     continue;
                 }
-                pieces[j][i] = Piece::change_value(&pieces[j][i], Data::get_new(&pieces[j][i]));
+                pieces[j][i] = Data::change_value(&pieces[j][i], Data::get_new(&pieces[j][i]));
             }
         }
     }
@@ -99,11 +26,72 @@ impl Piece {
         pieces[m.0][m.1] = pieces[index.0][index.1].clone();
         pieces[index.0][index.1] = Piece::None;
 
-        pieces[m.0][m.1] = Piece::change_value(&pieces[m.0][m.1], Data::get_new(&pieces[m.0][m.1]));
+        pieces[m.0][m.1] = Data::change_value(&pieces[m.0][m.1], Data::get_new(&pieces[m.0][m.1]));
+    }
+
+    pub fn calculate_moves(piece: &Piece, j: usize, i: usize) -> Vec<(usize, usize)> {
+        let j = j as isize;
+        let i = i as isize;
+        match piece {
+            Piece::Pawn(_) => {
+                if j == 6 {
+                    try_(vec![(j - 1, i), (j - 2, i)])
+                } else {
+                    try_(vec![(j - 1, i)])
+                }
+            }
+            Piece::Knight(_) => try_(vec![
+                (j - 2, i + 1),
+                (j - 2, i - 1),
+                (j + 2, i + 1),
+                (j + 2, i - 1),
+                (j - 1, i - 2),
+                (j - 1, i + 2),
+                (j + 1, i - 2),
+                (j + 1, i + 2),
+            ]),
+            Piece::Bishop(_) => {
+                let mut vec: Vec<(isize, isize)> = Vec::new();
+                for diff in (-7..8).rev() {
+                    vec.push((j + diff, i + diff));
+                    vec.push((j + diff, i - diff));
+                }
+                try_(vec)
+            }
+            Piece::Rook(_) => {
+                let mut vec: Vec<(isize, isize)> = Vec::new();
+                for diff in (-7..8).rev() {
+                    vec.push((j, i + diff));
+                    vec.push((j + diff, i));
+                }
+                try_(vec)
+            }
+            Piece::Queen(_) => {
+                let mut vec: Vec<(isize, isize)> = Vec::new();
+                for diff in (-7..8).rev() {
+                    vec.push((j, i + diff));
+                    vec.push((j + diff, i));
+                    vec.push((j + diff, i + diff));
+                    vec.push((j + diff, i - diff));
+                }
+                try_(vec)
+            }
+            Piece::King(_) => try_(vec![
+                (j, i + 1),
+                (j, i - 1),
+                (j + 1, i),
+                (j - 1, i),
+                (j + 1, i + 1),
+                (j + 1, i - 1),
+                (j - 1, i + 1),
+                (j - 1, i - 1),
+            ]),
+            _ => Vec::new(),
+        }
     }
 }
 
-pub fn try_(vec: Vec<(isize, isize)>) -> Vec<(usize, usize)> {
+fn try_(vec: Vec<(isize, isize)>) -> Vec<(usize, usize)> {
     let mut vec_safe: Vec<(usize, usize)> = Vec::new();
 
     for v in &vec {
@@ -112,117 +100,4 @@ pub fn try_(vec: Vec<(isize, isize)>) -> Vec<(usize, usize)> {
         }
     }
     vec_safe
-}
-
-pub fn calculate_moves(piece: &Piece, j: usize, i: usize) -> Vec<(usize, usize)> {
-    let j = j as isize;
-    let i = i as isize;
-    match piece {
-        Piece::Pawn(_) => {
-            if j == 6 {
-                try_(vec![(j - 1, i), (j - 2, i)])
-            } else {
-                try_(vec![(j - 1, i)])
-            }
-        }
-        Piece::Knight(_) => try_(vec![
-            (j - 2, i + 1),
-            (j - 2, i - 1),
-            (j + 2, i + 1),
-            (j + 2, i - 1),
-            (j - 1, i - 2),
-            (j - 1, i + 2),
-            (j + 1, i - 2),
-            (j + 1, i + 2),
-        ]),
-        Piece::Bishop(_) => {
-            let mut vec: Vec<(isize, isize)> = Vec::new();
-            for diff in (-7..8).rev() {
-                vec.push((j + diff, i + diff));
-                vec.push((j + diff, i - diff));
-            }
-            try_(vec)
-        }
-        Piece::Rook(_) => {
-            let mut vec: Vec<(isize, isize)> = Vec::new();
-            for diff in (-7..8).rev() {
-                vec.push((j, i + diff));
-                vec.push((j + diff, i));
-            }
-            try_(vec)
-        }
-        Piece::Queen(_) => {
-            let mut vec: Vec<(isize, isize)> = Vec::new();
-            for diff in (-7..8).rev() {
-                vec.push((j, i + diff));
-                vec.push((j + diff, i));
-                vec.push((j + diff, i + diff));
-                vec.push((j + diff, i - diff));
-            }
-            try_(vec)
-        }
-        Piece::King(_) => try_(vec![
-            (j, i + 1),
-            (j, i - 1),
-            (j + 1, i),
-            (j - 1, i),
-            (j + 1, i + 1),
-            (j + 1, i - 1),
-            (j - 1, i + 1),
-            (j - 1, i - 1),
-        ]),
-        _ => Vec::new(),
-    }
-}
-
-pub fn square_clicked(x: usize, y: usize) -> bool {
-    let x = x as f32;
-    let y = y as f32;
-
-    return is_mouse_button_pressed(MouseButton::Left)
-        && mouse_position().0 > x * SQUARE
-        && mouse_position().0 < x * SQUARE + SQUARE
-        && mouse_position().1 > y * SQUARE
-        && mouse_position().1 < y * SQUARE + SQUARE;
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Data {
-    pub tex: Texture2D,
-    pub selected: bool,
-    pub color: Color,
-    pub moves: Vec<(usize, usize)>,
-    pub side: Side,
-}
-impl Data {
-    pub fn new(tex: Texture2D, side: Side) -> Self {
-        Self {
-            tex: tex,
-            selected: false,
-            color: RAYWHITE,
-            moves: Vec::new(),
-            side: side,
-        }
-    }
-
-    pub fn get_new(piece: &Piece) -> Self {
-        Self {
-            tex: Piece::get_texture(piece),
-            selected: false,
-            color: RAYWHITE,
-            moves: Vec::new(),
-            side: Piece::get_side(piece),
-        }
-    }
-}
-impl Default for Data {
-    fn default() -> Self {
-        Self {
-            tex: Texture2D::empty(),
-            selected: false,
-            color: RAYWHITE,
-            moves: Vec::new(),
-            side: Side::None,
-        }
-    }
 }

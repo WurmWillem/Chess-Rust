@@ -1,4 +1,5 @@
-use crate::pieces::{calculate_moves, square_clicked, Data, Piece};
+use macroquad::prelude::*;
+use crate::{pieces::*, piece_data::Data, SQUARE};
 
 #[derive(PartialEq, Debug)]
 enum Turn {
@@ -32,13 +33,6 @@ impl Side {
             panic!("tried to opposite None");
         }
     }
-    fn if_opposite(side1: &Side, side2: &Side) -> bool {
-        if Side::opposite(side1) == *side2 {
-            true
-        } else {
-            false
-        }
-    }
 }
 
 pub struct State {
@@ -54,8 +48,8 @@ impl State {
 
         for j in 0..8 {
             for i in 0..8 {
-                if Piece::get_moves(&pieces[j][i]).len() > 0 {
-                    moves = Piece::get_moves(&pieces[j][i]);
+                if Data::get_moves(&pieces[j][i]).len() > 0 {
+                    moves = Data::get_moves(&pieces[j][i]);
                     index = (j, i);
                     break;
                 }
@@ -71,8 +65,8 @@ impl State {
                 Piece::deselect_every_piece(pieces);
 
                 if moves.len() > 0 {
-                    let side_clicked = Piece::get_side(&pieces[j][i]);
-                    let side_original = Piece::get_side(&pieces[index.0][index.1]);
+                    let side_clicked = Data::get_side(&pieces[j][i]);
+                    let side_original = Data::get_side(&pieces[index.0][index.1]);
 
                     for m in &moves {
                         if (j, i) == *m
@@ -88,7 +82,7 @@ impl State {
                     }
                 }
 
-                let side = Piece::get_side(&pieces[j][i]);
+                let side = Data::get_side(&pieces[j][i]);
                 if (side == Side::White && self.turn == Turn::Black)
                     || (side == Side::Black && self.turn == Turn::White)
                     || pieces[j][i] == Piece::None
@@ -97,17 +91,28 @@ impl State {
                     continue;
                 }
 
-                pieces[j][i] = Piece::change_value(
+                pieces[j][i] = Data::change_value(
                     &pieces[j][i],
                     Data {
-                        tex: Piece::get_texture(&pieces[j][i]),
-                        side: Piece::get_side(&pieces[j][i]),
+                        tex: Data::get_texture(&pieces[j][i]),
+                        side: Data::get_side(&pieces[j][i]),
                         selected: true,
-                        moves: calculate_moves(&pieces[j][i], j, i),
+                        moves: Piece::calculate_moves(&pieces[j][i], j, i),
                         ..Default::default()
                     },
                 );
             }
         }
     }
+}
+
+fn square_clicked(x: usize, y: usize) -> bool {
+    let x = x as f32;
+    let y = y as f32;
+
+    return is_mouse_button_pressed(MouseButton::Left)
+        && mouse_position().0 > x * SQUARE
+        && mouse_position().0 < x * SQUARE + SQUARE
+        && mouse_position().1 > y * SQUARE
+        && mouse_position().1 < y * SQUARE + SQUARE;
 }

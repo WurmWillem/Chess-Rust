@@ -8,6 +8,8 @@ mod textures;
 use textures::get_textures;
 mod state;
 use state::*;
+mod piece_data;
+use piece_data::*;
 
 #[macroquad::main(window_conf)]
 async fn main() {
@@ -95,7 +97,7 @@ impl Board {
         for j in 0..8 {
             for i in 0..8 {
                 //self.pieces[j][i] = Piece::None;
-                let tex = Piece::get_texture(&self.pieces[j][i]);
+                let tex = Data::get_texture(&self.pieces[j][i]);
                 if tex == Texture2D::empty() {
                     continue;
                 }
@@ -106,7 +108,7 @@ impl Board {
                     tex,
                     i as f32 * SQUARE + 1.0,
                     j as f32 * SQUARE + 3.0,
-                    Piece::get_color(&self.pieces[j][i]),
+                    Data::get_color(&self.pieces[j][i]),
                     params,
                 );
             }
@@ -116,7 +118,7 @@ impl Board {
     fn draw_board(&self) {
         for j in 0..8 {
             for i in 0..8 {
-                if Piece::get_if_selected(&self.pieces[j][i]) {
+                if Data::get_if_selected(&self.pieces[j][i]) {
                     draw_rectangle(
                         i as f32 * SQUARE,
                         j as f32 * SQUARE,
@@ -147,7 +149,7 @@ impl Board {
         }
         for j in 0..8 {
             for i in 0..8 {
-                let moves = Piece::get_moves(&self.pieces[j][i]);
+                let moves = Data::get_moves(&self.pieces[j][i]);
                 if moves.len() > 0 {
                     for m in moves {
                         draw_circle(
