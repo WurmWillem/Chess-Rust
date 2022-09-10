@@ -187,6 +187,42 @@ fn calculate_moves(piece: &Piece, j: usize, i: usize) -> Vec<(usize, usize)> {
             (j + 1, i - 2),
             (j + 1, i + 2),
         ]),
+        Piece::Bishop(_) => {
+            let mut vec: Vec<(isize, isize)> = Vec::new();
+            for diff in (-7..8).rev() {
+                vec.push((j + diff, i + diff));
+                vec.push((j + diff, i - diff));
+            }
+            try_(vec)
+        }
+        Piece::Rook(_) => {
+            let mut vec: Vec<(isize, isize)> = Vec::new();
+            for diff in (-7..8).rev() {
+                vec.push((j, i + diff));
+                vec.push((j + diff, i));
+            }
+            try_(vec)
+        }
+        Piece::Queen(_) => {
+            let mut vec: Vec<(isize, isize)> = Vec::new();
+            for diff in (-7..8).rev() {
+                vec.push((j, i + diff));
+                vec.push((j + diff, i));
+                vec.push((j + diff, i + diff));
+                vec.push((j + diff, i - diff));
+            }
+            try_(vec)
+        }
+        Piece::King(_) => try_(vec![
+            (j, i + 1),
+            (j, i - 1),
+            (j + 1, i),
+            (j - 1, i),
+            (j + 1, i + 1),
+            (j + 1, i - 1),
+            (j - 1, i + 1),
+            (j - 1, i - 1),
+        ]),
         _ => Vec::new(),
     }
 }

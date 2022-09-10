@@ -87,7 +87,6 @@ impl Board {
     }
 
     fn draw(&mut self) {
-        
         self.draw_board();
 
         for j in 0..8 {
@@ -154,7 +153,6 @@ impl Board {
                             SQUARE / 6.0,
                             MY_GRAY,
                         );
-                        
                     }
                 }
             }
