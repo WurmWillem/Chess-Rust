@@ -3,18 +3,21 @@ use macroquad::prelude::*;
 mod consts;
 pub use consts::*;
 mod pieces;
-use pieces::{Data, Piece};
+use pieces::*;
 mod textures;
 use textures::get_textures;
+mod state;
+use state::*;
 
 #[macroquad::main(window_conf)]
 async fn main() {
     let mut board = Board::new().await;
+    let mut state = State::new();
 
     loop {
         clear_background(BLACK);
 
-        pieces::check_for_move(&mut board.pieces);
+        state.check_for_move(&mut board.pieces);
         board.draw();
 
         next_frame().await
@@ -47,25 +50,25 @@ impl Board {
         }
 
         let white_pieces = vec![
-            Piece::Rook(Data::new(textures[3])),
-            Piece::Knight(Data::new(textures[1])),
-            Piece::Bishop(Data::new(textures[2])),
-            Piece::Queen(Data::new(textures[4])),
-            Piece::King(Data::new(textures[5])),
-            Piece::Bishop(Data::new(textures[2])),
-            Piece::Knight(Data::new(textures[1])),
-            Piece::Rook(Data::new(textures[3])),
+            Piece::Rook(Data::new(textures[3], Side::White)),
+            Piece::Knight(Data::new(textures[1], Side::White)),
+            Piece::Bishop(Data::new(textures[2], Side::White)),
+            Piece::Queen(Data::new(textures[4], Side::White)),
+            Piece::King(Data::new(textures[5], Side::White)),
+            Piece::Bishop(Data::new(textures[2], Side::White)),
+            Piece::Knight(Data::new(textures[1], Side::White)),
+            Piece::Rook(Data::new(textures[3], Side::White)),
         ];
 
         let black_pieces = vec![
-            Piece::Rook(Data::new(textures[9])),
-            Piece::Knight(Data::new(textures[7])),
-            Piece::Bishop(Data::new(textures[8])),
-            Piece::Queen(Data::new(textures[10])),
-            Piece::King(Data::new(textures[11])),
-            Piece::Bishop(Data::new(textures[8])),
-            Piece::Knight(Data::new(textures[7])),
-            Piece::Rook(Data::new(textures[9])),
+            Piece::Rook(Data::new(textures[9], Side::Black)),
+            Piece::Knight(Data::new(textures[7], Side::Black)),
+            Piece::Bishop(Data::new(textures[8], Side::Black)),
+            Piece::Queen(Data::new(textures[10], Side::Black)),
+            Piece::King(Data::new(textures[11], Side::Black)),
+            Piece::Bishop(Data::new(textures[8], Side::Black)),
+            Piece::Knight(Data::new(textures[7], Side::Black)),
+            Piece::Rook(Data::new(textures[9], Side::Black)),
         ];
 
         for j in 0..8 {
@@ -73,9 +76,9 @@ impl Board {
                 if j == 2 || j == 3 || j == 4 || j == 5 {
                     pieces[j][i] = Piece::None;
                 } else if j == 6 {
-                    pieces[j][i] = Piece::Pawn(Data::new(textures[0]));
+                    pieces[j][i] = Piece::Pawn(Data::new(textures[0], Side::White));
                 } else if j == 1 {
-                    pieces[j][i] = Piece::Pawn(Data::new(textures[6]));
+                    pieces[j][i] = Piece::Pawn(Data::new(textures[6], Side::Black));
                 } else if j == 7 {
                     pieces[j] = white_pieces.to_vec();
                 } else if j == 0 {
