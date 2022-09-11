@@ -1,5 +1,5 @@
+use crate::{piece_data::Data, pieces::*, SQUARE};
 use macroquad::prelude::*;
-use crate::{pieces::*, piece_data::Data, SQUARE};
 
 #[derive(PartialEq, Debug)]
 enum Turn {
@@ -97,7 +97,7 @@ impl State {
                         tex: Data::get_texture(&pieces[j][i]),
                         side: Data::get_side(&pieces[j][i]),
                         selected: true,
-                        moves: Piece::calculate_moves(&pieces[j][i], j, i),
+                        moves: Piece::calculate_moves(pieces, &pieces[j][i], j, i),
                         ..Default::default()
                     },
                 );

@@ -15,7 +15,9 @@ use piece_data::*;
 async fn main() {
     let mut board = Board::new().await;
     let mut state = State::new();
-
+    for diff in (-7..7).rev() {
+        //println!("{diff}");
+    }
     loop {
         clear_background(BLACK);
 
@@ -96,7 +98,6 @@ impl Board {
 
         for j in 0..8 {
             for i in 0..8 {
-                //self.pieces[j][i] = Piece::None;
                 let tex = Data::get_texture(&self.pieces[j][i]);
                 if tex == Texture2D::empty() {
                     continue;

@@ -1,6 +1,6 @@
-use macroquad::{texture::Texture2D, prelude::Color};
+use macroquad::{prelude::Color, texture::Texture2D};
 
-use crate::{state::Side, RAYWHITE, pieces::Piece};
+use crate::{pieces::Piece, state::Side, RAYWHITE};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Data {
