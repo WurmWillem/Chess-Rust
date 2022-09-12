@@ -96,7 +96,6 @@ impl Board {
 
         for j in 0..8 {
             for i in 0..8 {
-                //self.pieces[j][i] = Piece::None;
                 let tex = Data::get_texture(&self.pieces[j][i]);
                 if tex == Texture2D::empty() {
                     continue;
