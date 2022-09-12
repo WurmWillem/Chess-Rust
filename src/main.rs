@@ -15,9 +15,7 @@ use piece_data::*;
 async fn main() {
     let mut board = Board::new().await;
     let mut state = State::new();
-    /*for diff in -7..7 {
-        println!("{diff}");
-    }*/
+
     loop {
         clear_background(BLACK);
 

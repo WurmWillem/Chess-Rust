@@ -38,24 +38,8 @@ impl Piece {
         let j = j as isize;
         let i = i as isize;
         match piece {
-            Piece::Pawn(_) => {
-                if Data::get_side(&pieces[j as usize][i as usize]) == Side::White {
-                    if j == 6 {
-                        return_safe_moves(vec![(j - 1, i), (j - 2, i)])
-                    } else {
-                        return_safe_moves(vec![(j - 1, i)])
-                    }
-                } else if Data::get_side(&pieces[j as usize][i as usize]) == Side::Black {
-                    if j == 1 {
-                        return_safe_moves(vec![(j + 1, i), (j + 2, i)])
-                    } else {
-                        return_safe_moves(vec![(j + 1, i)])
-                    }
-                } else {
-                    panic!("side is unknown");
-                }
-            }
-            Piece::Knight(_) => return_safe_moves(vec![
+            Piece::Pawn(_) => generate_pawn_moves(pieces, i, j),
+            Piece::Knight(_) => return_safe_moves_vec(vec![
                 (j - 2, i + 1),
                 (j - 2, i - 1),
                 (j + 2, i + 1),
@@ -70,11 +54,11 @@ impl Piece {
             Piece::Queen(_) => {
                 let mut bishop_moves = generate_bishop_moves(pieces, i, j);
                 let mut rook_moves = generate_rook_moves(pieces, i, j);
-                
+
                 bishop_moves.append(&mut rook_moves);
                 bishop_moves
             }
-            Piece::King(_) => return_safe_moves(vec![
+            Piece::King(_) => return_safe_moves_vec(vec![
                 (j, i + 1),
                 (j, i - 1),
                 (j + 1, i),
@@ -87,6 +71,43 @@ impl Piece {
             _ => Vec::new(),
         }
     }
+}
+
+fn generate_pawn_moves(pieces: &Vec<Vec<Piece>>, i: isize, j: isize) -> Vec<(usize, usize)> {
+    let mut moves: Vec<(usize, usize)> = Vec::new();
+
+    if Data::get_side(&pieces[j as usize][i as usize]) == Side::White {
+        if pieces[return_if_positive(j, -1)][i as usize] == Piece::None {
+            moves.append(&mut return_safe_moves_vec(vec![(j - 1, i)]));
+        }
+        if j == 6 && pieces[return_if_positive(j, -2)][i as usize] == Piece::None{
+            moves.append(&mut return_safe_moves_vec(vec![(j - 2, i)]));
+        }
+        if Data::get_side(&pieces[return_if_positive(j, -1)][i as usize + 1]) == Side::Black {
+            moves.append(&mut return_safe_moves_vec(vec![(j - 1, i + 1)]));
+        }
+        println!("{} {}", j, i);
+        if Data::get_side(&pieces[return_if_positive(j, -1)][return_if_positive(i, -1)]) == Side::Black {
+            moves.append(&mut return_safe_moves_vec(vec![(j - 1, i - 1)]));
+        }
+    } else if Data::get_side(&pieces[j as usize][i as usize]) == Side::Black {
+        if pieces[j as usize + 1][i as usize] == Piece::None {
+            moves.append(&mut return_safe_moves_vec(vec![(j + 1, i)]));
+        }
+        if j == 1 && pieces[j as usize + 2][i as usize] == Piece::None {
+            moves.append(&mut return_safe_moves_vec(vec![(j + 2, i)]));
+        }
+        if Data::get_side(&pieces[j as usize + 1][i as usize + 1]) == Side::White {
+            moves.append(&mut return_safe_moves_vec(vec![(j + 1, i + 1)]));
+        }
+        else if Data::get_side(&pieces[j as usize + 1][i as usize - 1]) == Side::White {
+            moves.append(&mut return_safe_moves_vec(vec![(j + 1, i - 1)]));
+        }
+    } else {
+        panic!("side is unknown");
+    }
+    
+    moves
 }
 
 fn generate_bishop_moves(pieces: &Vec<Vec<Piece>>, i: isize, j: isize) -> Vec<(usize, usize)> {
@@ -109,10 +130,10 @@ fn generate_bishop_moves(pieces: &Vec<Vec<Piece>>, i: isize, j: isize) -> Vec<(u
         x += 1;
     }
 
-    let mut right_up = return_non_blocked_moves(pieces, return_safe_moves(right_up));
-    let mut right_down = return_non_blocked_moves(pieces, return_safe_moves(right_down));
-    let mut left_up = return_non_blocked_moves(pieces, return_safe_moves(left_up));
-    let mut left_down = return_non_blocked_moves(pieces, return_safe_moves(left_down));
+    let mut right_up = return_non_blocked_moves(pieces, return_safe_moves_vec(right_up));
+    let mut right_down = return_non_blocked_moves(pieces, return_safe_moves_vec(right_down));
+    let mut left_up = return_non_blocked_moves(pieces, return_safe_moves_vec(left_up));
+    let mut left_down = return_non_blocked_moves(pieces, return_safe_moves_vec(left_down));
 
     right_up.append(&mut left_up);
     right_down.append(&mut left_down);
@@ -152,10 +173,10 @@ fn generate_rook_moves(pieces: &Vec<Vec<Piece>>, i: isize, j: isize) -> Vec<(usi
         x += 1;
     }
 
-    let mut vec_right = return_non_blocked_moves(pieces, return_safe_moves(vec_right));
-    let mut vec_left = return_non_blocked_moves(pieces, return_safe_moves(vec_left));
-    let mut vec_up = return_non_blocked_moves(pieces, return_safe_moves(vec_up));
-    let mut vec_down = return_non_blocked_moves(pieces, return_safe_moves(vec_down));
+    let mut vec_right = return_non_blocked_moves(pieces, return_safe_moves_vec(vec_right));
+    let mut vec_left = return_non_blocked_moves(pieces, return_safe_moves_vec(vec_left));
+    let mut vec_up = return_non_blocked_moves(pieces, return_safe_moves_vec(vec_up));
+    let mut vec_down = return_non_blocked_moves(pieces, return_safe_moves_vec(vec_down));
 
     vec_right.append(&mut vec_left);
     vec_up.append(&mut vec_down);
@@ -183,7 +204,14 @@ fn return_non_blocked_moves(
     vec_safe
 }
 
-fn return_safe_moves(vec: Vec<(isize, isize)>) -> Vec<(usize, usize)> {
+fn return_if_positive(x: isize, diff: isize) -> usize{
+    if x + diff >= 0 {
+        return (x + diff) as usize
+    }
+    x as usize
+}
+
+fn return_safe_moves_vec(vec: Vec<(isize, isize)>) -> Vec<(usize, usize)> {
     let mut vec_safe: Vec<(usize, usize)> = Vec::new();
 
     for v in &vec {
