@@ -83,9 +83,9 @@ impl State {
                 }
 
                 let side = Data::get_side(&pieces[j][i]);
-                if (side == Side::White && self.turn == Turn::Black)
-                    || (side == Side::Black && self.turn == Turn::White)
-                    || pieces[j][i] == Piece::None
+                if //(side == Side::White && self.turn == Turn::Black)
+                    //|| (side == Side::Black && self.turn == Turn::White)
+                     pieces[j][i] == Piece::None
                     || moved_piece
                 {
                     continue;

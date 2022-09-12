@@ -74,57 +74,68 @@ impl Piece {
                 return_safe_moves(vec)
             }
             Piece::Rook(_) => {
-                /*let mut vec_hor: Vec<(isize, isize)> = Vec::new();
-                let mut vec_hor1: Vec<(isize, isize)> = Vec::new();
-                let mut vec_ver: Vec<(isize, isize)> = Vec::new();
-                let mut vec_ver1: Vec<(isize, isize)> = Vec::new();
+                let mut vec_right: Vec<(isize, isize)> = Vec::new();
+                let mut vec_left: Vec<(isize, isize)> = Vec::new();
+                let mut vec_up: Vec<(isize, isize)> = Vec::new();
+                let mut vec_down: Vec<(isize, isize)> = Vec::new();
 
-                /*for diff in (-7..8).rev() {
-                    vec_hor.push((j, i + diff));
-                    vec_ver.push((j + diff, i));
+                let mut x = 1;
+                for _ in (i + 1)..8 {
+                    vec_right.push((j, i + x));
+                    x += 1;
+                }
+                let mut vec_right = return_non_blocked_moves(pieces, return_safe_moves(vec_right));
+
+                let mut x = 1;
+                for _ in 1..(i + 1) {
+                    vec_left.push((j, i - x));
+                    x += 1;
+                }
+                let mut vec_left = return_non_blocked_moves(pieces, return_safe_moves(vec_left));
+
+                let mut x = 1;
+                for _ in (j + 1)..8 {
+                    vec_up.push((j + x, i));
+                    x += 1;
+                }
+                let mut vec_up = return_non_blocked_moves(pieces, return_safe_moves(vec_up));
+
+                let mut x = 1;
+                for _ in 1..(j + 1) {
+                    vec_down.push((j - x, i));
+                    x += 1;
+                }
+                let mut vec_down = return_non_blocked_moves(pieces, return_safe_moves(vec_down));
+
+                /*for v in &vec_right {
+                    println!("right safe and not blocked is {:?}", v);
+                }
+                println!("");
+                for v in &vec_left {
+                    println!("left safe and not blocked is {:?}", v);
+                }
+                println!("");
+                for v in &vec_up {
+                    println!("up safe and not blocked is {:?}", v);
+                }
+                println!("");
+                for v in &vec_down {
+                    println!("down safe and not blocked is {:?}", v);
                 }*/
-                /*for diff in (i + 1)..8 {
-                    if diff != 0 {
-                        vec_hor.push((j, i + diff));
-                    }
-                }
-                let mut vec_hor = return_non_blocked_moves(pieces, return_safe_moves(vec_hor)); 
-    
-                for diff in (-7..i).rev() {
-                    if diff != 0 {
-                        vec_hor1.push((j, i + diff));
-                    }
-                }
-                let mut vec_hor1 = return_non_blocked_moves(pieces, return_safe_moves(vec_hor1)); 
-                for diff in (j + 1)..8 {
-                    if diff != 0 {
-                        vec_ver.push((j + diff, i));
-                    }
-                }
-                let mut vec_ver = return_non_blocked_moves(pieces, return_safe_moves(vec_ver)); 
-                for diff in (-7..j).rev() {
-                    //println!("{diff}");
-                    if diff != 0 {
-                        vec_ver1.push((j + diff, i));
-                    }
-                    
-                }
-                let mut vec_ver1 = return_non_blocked_moves(pieces, return_safe_moves(vec_ver1)); 
+                println!("");
                 
-                //println!("");
-                vec_hor.append(&mut vec_hor1);
-                vec_ver.append(&mut vec_ver1);
-                vec_hor.append(&mut vec_ver);
-                
-                
-                vec_hor*/*/
-                let mut vec: Vec<(isize, isize)> = Vec::new();
+                vec_right.append(&mut vec_left);
+                vec_up.append(&mut vec_down);
+                vec_right.append(&mut vec_up);
+
+
+                vec_right
+                /*let mut vec: Vec<(isize, isize)> = Vec::new();
                 for diff in (-7..8).rev() {
                     vec.push((j, i + diff));
                     vec.push((j + diff, i));
                 }
-                return_safe_moves(vec)
-
+                return_safe_moves(vec)*/
             }
             Piece::Queen(_) => {
                 let mut vec: Vec<(isize, isize)> = Vec::new();
@@ -151,21 +162,25 @@ impl Piece {
     }
 }
 
-fn return_non_blocked_moves(pieces: &Vec<Vec<Piece>>, vec: Vec<(usize, usize)>) -> Vec<(usize, usize)> {
+fn return_non_blocked_moves(
+    pieces: &Vec<Vec<Piece>>,
+    vec: Vec<(usize, usize)>,
+) -> Vec<(usize, usize)> {
     let mut vec_safe: Vec<(usize, usize)> = Vec::new();
-
+    
     for v in &vec {
-        //println!("{} {}", v.0, v.1);
+        //println!("{:?}", v);
         if pieces[v.0][v.1] != Piece::None {
-            println!("piece found at {:?}", v);
+            //println!("piece found at {:?}", v);
             break;
         }
-        //println!("empty");
+        
         vec_safe.push(*v);
     }
     for v in &vec_safe {
-        //println!("{:?}", *v);
+        //println!("non blocked is safe is {:?}", *v);
     }
+    println!("");
     vec_safe
 }
 
@@ -175,9 +190,8 @@ fn return_safe_moves(vec: Vec<(isize, isize)>) -> Vec<(usize, usize)> {
     for v in &vec {
         if v.0 >= 0 && v.0 < 8 && v.1 >= 0 && v.1 < 8 {
             vec_safe.push((v.0 as usize, v.1 as usize));
-            //println!("{} {}", v.0, v.1);
         }
     }
-    //println!("");
+    
     vec_safe
 }
