@@ -80,14 +80,16 @@ fn generate_pawn_moves(pieces: &Vec<Vec<Piece>>, i: isize, j: isize) -> Vec<(usi
         if pieces[return_if_positive(j, -1)][i as usize] == Piece::None {
             moves.append(&mut return_safe_moves_vec(vec![(j - 1, i)]));
         }
-        if j == 6 && pieces[return_if_positive(j, -2)][i as usize] == Piece::None{
+        if j == 6 && pieces[return_if_positive(j, -2)][i as usize] == Piece::None {
             moves.append(&mut return_safe_moves_vec(vec![(j - 2, i)]));
         }
         if Data::get_side(&pieces[return_if_positive(j, -1)][i as usize + 1]) == Side::Black {
             moves.append(&mut return_safe_moves_vec(vec![(j - 1, i + 1)]));
         }
-        println!("{} {}", j, i);
-        if Data::get_side(&pieces[return_if_positive(j, -1)][return_if_positive(i, -1)]) == Side::Black {
+
+        if Data::get_side(&pieces[return_if_positive(j, -1)][return_if_positive(i, -1)])
+            == Side::Black
+        {
             moves.append(&mut return_safe_moves_vec(vec![(j - 1, i - 1)]));
         }
     } else if Data::get_side(&pieces[j as usize][i as usize]) == Side::Black {
@@ -99,14 +101,13 @@ fn generate_pawn_moves(pieces: &Vec<Vec<Piece>>, i: isize, j: isize) -> Vec<(usi
         }
         if Data::get_side(&pieces[j as usize + 1][i as usize + 1]) == Side::White {
             moves.append(&mut return_safe_moves_vec(vec![(j + 1, i + 1)]));
-        }
-        else if Data::get_side(&pieces[j as usize + 1][i as usize - 1]) == Side::White {
+        } else if Data::get_side(&pieces[j as usize + 1][i as usize - 1]) == Side::White {
             moves.append(&mut return_safe_moves_vec(vec![(j + 1, i - 1)]));
         }
     } else {
         panic!("side is unknown");
     }
-    
+
     moves
 }
 
@@ -196,6 +197,7 @@ fn return_non_blocked_moves(
         //println!("{:?}", v);
         if pieces[v.0][v.1] != Piece::None {
             //println!("piece found at {:?}", v);
+            vec_safe.push(*v);
             break;
         }
 
@@ -204,9 +206,9 @@ fn return_non_blocked_moves(
     vec_safe
 }
 
-fn return_if_positive(x: isize, diff: isize) -> usize{
+fn return_if_positive(x: isize, diff: isize) -> usize {
     if x + diff >= 0 {
-        return (x + diff) as usize
+        return (x + diff) as usize;
     }
     x as usize
 }
