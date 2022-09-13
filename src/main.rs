@@ -20,6 +20,7 @@ async fn main() {
         clear_background(BLACK);
 
         state.check_for_move(&mut board.pieces);
+        //state.check_for_check(&mut board.pieces);
         board.draw();
 
         next_frame().await

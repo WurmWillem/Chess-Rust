@@ -77,37 +77,58 @@ fn generate_pawn_moves(pieces: &Vec<Vec<Piece>>, i: isize, j: isize) -> Vec<(usi
     let mut moves: Vec<(usize, usize)> = Vec::new();
 
     if Data::get_side(&pieces[j as usize][i as usize]) == Side::White {
-        if pieces[return_if_positive(j, -1)][i as usize] == Piece::None {
-            moves.append(&mut return_safe_moves_vec(vec![(j - 1, i)]));
+        let (safe, forward) = return_if_safe(j-1, i);
+        if safe {
+            if pieces[forward.0][forward.1] == Piece::None {
+                moves.append(&mut return_safe_moves_vec(vec![(j - 1, i)]));
+            }
         }
-        if j == 6 && pieces[return_if_positive(j, -2)][i as usize] == Piece::None {
-            moves.append(&mut return_safe_moves_vec(vec![(j - 2, i)]));
+        let (safe, forward) = return_if_safe(j - 2, i);
+        if safe && j == 6 {
+            if pieces[forward.0][forward.1] == Piece::None {
+                moves.append(&mut return_safe_moves_vec(vec![(j - 2, i)]));
+            }
         }
-        if Data::get_side(&pieces[return_if_positive(j, -1)][i as usize + 1]) == Side::Black {
-            moves.append(&mut return_safe_moves_vec(vec![(j - 1, i + 1)]));
+        let (safe, right_forward) = return_if_safe(j - 1, i + 1);
+        if safe {
+            if Data::get_side(&pieces[right_forward.0][right_forward.1]) == Side::Black {
+                moves.append(&mut return_safe_moves_vec(vec![(j - 1, i + 1)]));
+            }
         }
-
-        if Data::get_side(&pieces[return_if_positive(j, -1)][return_if_positive(i, -1)])
-            == Side::Black
-        {
-            moves.append(&mut return_safe_moves_vec(vec![(j - 1, i - 1)]));
+        let (safe, left_forward) = return_if_safe(j - 1, i - 1);
+        if safe {
+            if Data::get_side(&pieces[left_forward.0][left_forward.1]) == Side::Black {
+                moves.append(&mut return_safe_moves_vec(vec![(j - 1, i - 1)]));
+            }
         }
     } else if Data::get_side(&pieces[j as usize][i as usize]) == Side::Black {
-        if pieces[j as usize + 1][i as usize] == Piece::None {
-            moves.append(&mut return_safe_moves_vec(vec![(j + 1, i)]));
+        let (safe, forward) = return_if_safe(j + 1, i);
+        if safe {
+            if pieces[forward.0][forward.1] == Piece::None {
+                moves.append(&mut return_safe_moves_vec(vec![(j + 1, i)]));
+            }
         }
-        if j == 1 && pieces[j as usize + 2][i as usize] == Piece::None {
-            moves.append(&mut return_safe_moves_vec(vec![(j + 2, i)]));
+        let (safe, forward) = return_if_safe(j + 2, i);
+        if safe && j == 1 {
+            if pieces[forward.0][forward.1] == Piece::None {
+                moves.append(&mut return_safe_moves_vec(vec![(j + 2, i)]));
+            }
         }
-        if Data::get_side(&pieces[j as usize + 1][i as usize + 1]) == Side::White {
-            moves.append(&mut return_safe_moves_vec(vec![(j + 1, i + 1)]));
-        } else if Data::get_side(&pieces[j as usize + 1][i as usize - 1]) == Side::White {
-            moves.append(&mut return_safe_moves_vec(vec![(j + 1, i - 1)]));
+        let (safe, right_forward) = return_if_safe(j + 1, i + 1);
+        if safe {
+            if Data::get_side(&pieces[right_forward.0][right_forward.1]) == Side::White {
+                moves.append(&mut return_safe_moves_vec(vec![(j + 1, i + 1)]));
+            }
+        }
+        let (safe, left_forward) = return_if_safe(j + 1, i - 1);
+        if safe {
+            if Data::get_side(&pieces[left_forward.0][left_forward.1]) == Side::White {
+                moves.append(&mut return_safe_moves_vec(vec![(j + 1, i - 1)]));
+            }
         }
     } else {
         panic!("side is unknown");
     }
-
     moves
 }
 
@@ -194,23 +215,20 @@ fn return_non_blocked_moves(
     let mut vec_safe: Vec<(usize, usize)> = Vec::new();
 
     for v in &vec {
-        //println!("{:?}", v);
         if pieces[v.0][v.1] != Piece::None {
-            //println!("piece found at {:?}", v);
             vec_safe.push(*v);
             break;
         }
-
         vec_safe.push(*v);
     }
     vec_safe
 }
 
-fn return_if_positive(x: isize, diff: isize) -> usize {
-    if x + diff >= 0 {
-        return (x + diff) as usize;
+fn return_if_safe(x: isize, y: isize) -> (bool, (usize, usize)) {
+    if x >= 0 && x < 8 && y >= 0 && y < 8 {
+        return (true, (x as usize, y as usize))
     }
-    x as usize
+    (false, (99, 99))
 }
 
 fn return_safe_moves_vec(vec: Vec<(isize, isize)>) -> Vec<(usize, usize)> {

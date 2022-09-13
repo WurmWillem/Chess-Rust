@@ -97,10 +97,23 @@ impl State {
                         tex: Data::get_texture(&pieces[j][i]),
                         side: Data::get_side(&pieces[j][i]),
                         selected: true,
-                        moves: Piece::calculate_moves(pieces, &pieces[j][i], j, i),
+                        moves: Piece::calculate_moves(pieces, &pieces[j][i],j, i),
                         ..Default::default()
                     },
                 );
+            }
+        }
+    }
+
+    pub fn check_for_check(&self, pieces: &mut Vec<Vec<Piece>>) {
+        for j in 0..8 {
+            for i in 0..8 {
+                for m in &Piece::calculate_moves(pieces, &pieces[j][i], j, i) {
+                    match pieces[m.0][m.1] {
+                        Piece::King(_) => println!("king found at {:?}", m),
+                        _ => ()
+                    }
+                }
             }
         }
     }
